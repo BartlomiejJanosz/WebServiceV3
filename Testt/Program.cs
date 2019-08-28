@@ -24,8 +24,8 @@ namespace Testt
             CreateWaitingRoomTable();
             CreateBattleInfoTable();
 
-            ValuesController.DeleteAllPlayersFromWaitingRoomTable();
-            ValuesController.DeleteAllFromBattleInfoTable();
+            ValuesController.DeleteAllRecordsFromWaitingRoomTable();
+            ValuesController.DeleteAllRecordsFromBattleInfoTable();
 
             // Start OWIN host 
             using (WebApp.Start<Startup>(url: baseAddress))

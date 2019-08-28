@@ -27,11 +27,35 @@ namespace Testt
             return AddPlayerToWaitingRoomTableReturnNameAndIdOfFounderIfExists(player);
         }
 
-
-        //HTTP METHOD
-        public void Delete()
+        public void Post([FromBody] BattleInfo battleInfo)
         {
-            DeleteAllPlayersFromWaitingRoomTable();
+            AddBattleInfoToTable(battleInfo);
+        }
+
+        private void AddBattleInfoToTable(BattleInfo battleInfo)
+        {
+            //!!
+            //using (SQLiteConnection dbConnection = new SQLiteConnection("Data Source=LangWarDataBase.sqlite;Version=3;"))
+            //{
+            //    dbConnection.Open();
+            //    string playerId = CreatePlayerId(dbConnection);
+
+            //    string sqliteQuery = "INSERT INTO waitingRoom (playerId, playerName) values (" + playerId + ", '" + playerName + "')";
+            //    SQLiteCommand sqliteCommand = new SQLiteCommand(sqliteQuery, dbConnection);
+            //    sqliteCommand.ExecuteNonQuery();
+            //}
+        }
+
+        public void Delete([FromBody]DeleteInfo deleteInfo)
+        {
+            if(deleteInfo.TableName == "waitingRoom")
+            {
+                DeleteAllRecordsFromWaitingRoomTable();
+            }
+            else if(deleteInfo.TableName == "battleInfo")
+            {
+                DeleteAllRecordsFromBattleInfoTable();
+            }            
         }
 
         //HTTP METHOD
@@ -64,8 +88,8 @@ namespace Testt
                 return "";
             }
         }
-        //!!!
-        public static void DeleteAllFromBattleInfoTable()
+
+        public static void DeleteAllRecordsFromBattleInfoTable()
         {
             using (SQLiteConnection dbConnection = new SQLiteConnection("Data Source=LangWarDataBase.sqlite;Version=3;"))
             {
@@ -76,7 +100,7 @@ namespace Testt
             }
         }
 
-        public static void DeleteAllPlayersFromWaitingRoomTable()
+        public static void DeleteAllRecordsFromWaitingRoomTable()
         {           
                 using (SQLiteConnection dbConnection = new SQLiteConnection("Data Source=LangWarDataBase.sqlite;Version=3;"))
                 {
