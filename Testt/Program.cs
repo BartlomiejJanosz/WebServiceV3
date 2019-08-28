@@ -22,7 +22,10 @@ namespace Testt
 
             CreateLangWarDataBase();
             CreateWaitingRoomTable();
+            CreateBattleInfoTable();
+
             ValuesController.DeleteAllPlayersFromWaitingRoomTable();
+            ValuesController.DeleteAllFromBattleInfoTable();
 
             // Start OWIN host 
             using (WebApp.Start<Startup>(url: baseAddress))
@@ -30,6 +33,22 @@ namespace Testt
                 while (true)
                 {
                     Thread.Sleep(2);
+                }
+            }
+        }
+        
+        private static void CreateBattleInfoTable()
+        {
+            using (SQLiteConnection dbConnection = new SQLiteConnection("Data Source=LangWarDataBase.sqlite;Version=3;"))
+            {
+                dbConnection.Open();
+                bool battleInfoTableTableExist = CheckIfTableExists(dbConnection, "battleInfo");
+
+                if (!battleInfoTableTableExist)
+                {
+                    string sqliteQuery = "CREATE TABLE battleInfo (infoId INT, playerId INT, health INT, firstCardId INT, firstCardLangVersion VARCHAR(20), secondCardId INT, secondCardLangVersion VARCHAR(20))";
+                    SQLiteCommand sqliteCommand = new SQLiteCommand(sqliteQuery, dbConnection);
+                    sqliteCommand.ExecuteNonQuery();
                 }
             }
         }
@@ -44,35 +63,25 @@ namespace Testt
             }
         }
 
-        private void CreateQueueOfQueriesTable()
-        {
-            var currentDirectory = Directory.GetCurrentDirectory();
-            var pathToFile = Path.Combine(currentDirectory, "LangWarDataBase.sqlite");
-            if (!File.Exists(pathToFile))
-            {
-                SQLiteConnection.CreateFile("LangWarDataBase.sqlite");
-            }
-        }
-
         private static void CreateWaitingRoomTable()
         {
-            SQLiteConnection dbConnection = new SQLiteConnection("Data Source=LangWarDataBase.sqlite;Version=3;");
-            dbConnection.Open();
-            bool waitingRoomTableExist =  CheckIfWaitingRoomTableExists(dbConnection);
-
-            if(!waitingRoomTableExist)
+            using (SQLiteConnection dbConnection = new SQLiteConnection("Data Source=LangWarDataBase.sqlite;Version=3;"))
             {
-                string sqliteQuery = "CREATE TABLE waitingRoom (playerId INT, playerName VARCHAR(20))"; 
-                SQLiteCommand sqliteCommand = new SQLiteCommand(sqliteQuery, dbConnection);
-                sqliteCommand.ExecuteNonQuery();
-            }
+                dbConnection.Open();
+                bool waitingRoomTableExist = CheckIfTableExists(dbConnection, "waitingRoom");
 
-            dbConnection.Close();
+                if (!waitingRoomTableExist)
+                {
+                    string sqliteQuery = "CREATE TABLE waitingRoom (playerId INT, playerName VARCHAR(20))";
+                    SQLiteCommand sqliteCommand = new SQLiteCommand(sqliteQuery, dbConnection);
+                    sqliteCommand.ExecuteNonQuery();
+                }
+            }
         }
 
-        private static bool CheckIfWaitingRoomTableExists(SQLiteConnection dbConnection)
+        private static bool CheckIfTableExists(SQLiteConnection dbConnection,string tableName)
         {
-            string sqliteQuery = "SELECT * FROM waitingRoom";
+            string sqliteQuery = "SELECT * FROM "+ tableName;
             SQLiteCommand command = new SQLiteCommand(dbConnection);
             command.CommandText = sqliteQuery;
 

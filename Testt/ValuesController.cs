@@ -64,6 +64,17 @@ namespace Testt
                 return "";
             }
         }
+        //!!!
+        public static void DeleteAllFromBattleInfoTable()
+        {
+            using (SQLiteConnection dbConnection = new SQLiteConnection("Data Source=LangWarDataBase.sqlite;Version=3;"))
+            {
+                dbConnection.Open();
+                string sqliteQuery = "DELETE FROM battleInfo";
+                SQLiteCommand sqliteCommand = new SQLiteCommand(sqliteQuery, dbConnection);
+                sqliteCommand.ExecuteNonQuery();
+            }
+        }
 
         public static void DeleteAllPlayersFromWaitingRoomTable()
         {           
