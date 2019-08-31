@@ -34,16 +34,16 @@ namespace Testt
 
         private void AddBattleInfoToTable(BattleInfo battleInfo)
         {
-            //!!
-            //using (SQLiteConnection dbConnection = new SQLiteConnection("Data Source=LangWarDataBase.sqlite;Version=3;"))
-            //{
-            //    dbConnection.Open();
-            //    string playerId = CreatePlayerId(dbConnection);
+            using (SQLiteConnection dbConnection = new SQLiteConnection("Data Source=LangWarDataBase.sqlite;Version=3;"))
+            {
+                dbConnection.Open();
+                string battleInfoId = CreateIdForSpecyficTable(dbConnection, "battleInfo");
 
-            //    string sqliteQuery = "INSERT INTO waitingRoom (playerId, playerName) values (" + playerId + ", '" + playerName + "')";
-            //    SQLiteCommand sqliteCommand = new SQLiteCommand(sqliteQuery, dbConnection);
-            //    sqliteCommand.ExecuteNonQuery();
-            //}
+                string sqliteQuery = "INSERT INTO battleInfo (infoId, playerId, health, firstCardId, firstCardLangVersion, secondCardId, secondCardLangVersion) values ({0},{1},{2},{3},'{4}',{5},'{6}')";
+                sqliteQuery = String.Format(sqliteQuery, battleInfoId, battleInfo.PlayerId, battleInfo.Health, battleInfo.FirstCard.CardId, battleInfo.FirstCard.LangVersion, battleInfo.SecondCard.CardId, battleInfo.SecondCard.LangVersion);
+                SQLiteCommand sqliteCommand = new SQLiteCommand(sqliteQuery, dbConnection);
+                sqliteCommand.ExecuteNonQuery();
+            }
         }
 
         public void Delete([FromBody]DeleteInfo deleteInfo)
@@ -70,7 +70,7 @@ namespace Testt
                 using (SQLiteConnection dbConnection = new SQLiteConnection("Data Source=LangWarDataBase.sqlite;Version=3;"))
                 {
                     dbConnection.Open();
-                    if (HowManyUsersExistInWaitingRoomTable(dbConnection) == 0)
+                    if (HowManyRecordsExistInSpecyficTable(dbConnection, "waitingRoom") == 0)
                     {
                         return "";
                     }
@@ -119,7 +119,7 @@ namespace Testt
                     string sqliteQuery = "SELECT * FROM waitingRoom";
                     SQLiteCommand sqliteCommand = new SQLiteCommand(sqliteQuery, dbConnection);
 
-                    if (HowManyUsersExistInWaitingRoomTable(dbConnection) != 0)
+                    if (HowManyRecordsExistInSpecyficTable(dbConnection, "waitingRoom") != 0)
                     {
                         SQLiteDataReader reader = sqliteCommand.ExecuteReader();
 
@@ -177,7 +177,7 @@ namespace Testt
                 using (SQLiteConnection dbConnection = new SQLiteConnection("Data Source=LangWarDataBase.sqlite;Version=3;"))
                 {
                     dbConnection.Open();
-                    string playerId = CreatePlayerId(dbConnection);
+                    string playerId = CreateIdForSpecyficTable(dbConnection, "waitingRoom");
 
                     string sqliteQuery = "INSERT INTO waitingRoom (playerId, playerName) values (" + playerId + ", '" + playerName + "')";
                     SQLiteCommand sqliteCommand = new SQLiteCommand(sqliteQuery, dbConnection);
@@ -185,14 +185,14 @@ namespace Testt
                 }
         }
 
-        private string CreatePlayerId(SQLiteConnection dbConnection)
+        private string CreateIdForSpecyficTable(SQLiteConnection dbConnection, string tableName)
         {
-            var id = HowManyUsersExistInWaitingRoomTable(dbConnection) + 1;
+            var id = HowManyRecordsExistInSpecyficTable(dbConnection, tableName) + 1;
             return id.ToString();
         }
-        private int HowManyUsersExistInWaitingRoomTable(SQLiteConnection dbConnection)
+        private int HowManyRecordsExistInSpecyficTable(SQLiteConnection dbConnection, string tableName)
         {
-                string sqliteQuery = "SELECT * FROM waitingRoom";
+                string sqliteQuery = "SELECT * FROM " + tableName;
                 SQLiteCommand sqliteCommand = new SQLiteCommand(sqliteQuery, dbConnection);
                 SQLiteDataReader sqliteReader = sqliteCommand.ExecuteReader();
 
