@@ -9,17 +9,13 @@ namespace Testt
 {
     public class BattleInfo
     {
-        public BattleInfo(int battleInfoId, int playerId, int health, Card firstCard, Card secondCard)
+        public BattleInfo(int playerId, int health, Card firstCard, Card secondCard)
         {
             PlayerId = playerId;
             Health = health;
             FirstCard = firstCard;
             SecondCard = secondCard;
-            BattleInfoId = battleInfoId;
         }
-
-        [JsonProperty("battleInfoId")]
-        public int BattleInfoId { get; } 
 
         [JsonProperty("playerId")]
         public int PlayerId { get; }
@@ -27,11 +23,10 @@ namespace Testt
         [JsonProperty("health")]
         public int Health { get; }
 
-        [JsonProperty("firstCard")]
+        [JsonProperty("firstcard")]
         public Card FirstCard { get; }
 
-        [JsonProperty("secondCard")]
+        [JsonProperty("secondcard")]
         public Card SecondCard { get; }
-
     }
 }
