@@ -9,6 +9,7 @@ using System.IO;
 using System.Net.Http;
 using System.Data;
 using System.Data.SQLite;
+using Newtonsoft.Json;
 
 namespace Testt
 {
@@ -18,7 +19,17 @@ namespace Testt
         public string Get()
         {
             //Returns for example: 1Bartek2Kordian //number on left side of the playerName is id related to that word in waitingRoom table
-            return ReturnChainOfPlayersNamesAndPlayerIdsFromWaitingRoomTable();
+            return GetChainOfPlayersNamesAndPlayerIdsFromWaitingRoomTable();
+        }
+
+        [HttpGet]
+        [ActionName("battleInfo")]
+        public string Get(int playerId)
+        {
+            if (playerId == -1)
+                return "";
+            else
+                return GetLastOpponentBattleInfo(playerId).Result;
         }
 
         //HTTP METHOD
@@ -28,6 +39,8 @@ namespace Testt
         }
 
         //HTTP METHOD
+        [HttpPost]
+        [ActionName("battleInfo")]
         public void Post([FromBody] BattleInfo battleInfo)
         {
             AddBattleInfoToTable(battleInfo);
@@ -49,6 +62,42 @@ namespace Testt
         //HTTP METHOD
         public void Put(int id, [FromBody]string value)
         {
+        }
+
+        private async Task<string> GetLastOpponentBattleInfo(int playerId)
+        {
+            using (SQLiteConnection dbConnection = new SQLiteConnection("Data Source=LangWarDataBase.sqlite;Version=3;"))
+            {
+                dbConnection.Open();
+
+                string sqliteQuery = "SELECT * FROM battleInfo WHERE playerId = " + playerId.ToString()+ " ORDER BY infoId ASC";
+                SQLiteCommand sqliteCommand = new SQLiteCommand(sqliteQuery, dbConnection);
+
+                if (HowManyRecordsExistInSpecyficTable(dbConnection, "battleInfo") != 0)
+                {
+                    SQLiteDataReader reader = sqliteCommand.ExecuteReader();
+                   
+                    //while to be removed
+                    while (reader.Read())
+                    {
+                        var battleInfoId = Convert.ToInt32(reader["infoId"]);
+                        var health = Convert.ToInt32(reader["health"]);
+
+                        Card firstCard = new Card(Convert.ToInt32(reader["firstCardId"]),3,"wcielenie","incarnation", reader["firstCardLangVersion"].ToString());
+                        Card secondtCard = new Card(Convert.ToInt32(reader["secondCardId"]), 2, "kaplica", "chapel", reader["secondCardLangVersion"].ToString());
+
+                        BattleInfo battleInfo = new BattleInfo(battleInfoId,playerId,health,firstCard,secondtCard);
+
+                        var battleInfoAsString = await Task.Run(() => JsonConvert.SerializeObject(battleInfo));
+                        return battleInfoAsString;
+                    }
+                    return "";
+                }
+                else
+                {
+                    return "";
+                }
+            }
         }
 
         private void AddBattleInfoToTable(BattleInfo battleInfo)
@@ -78,7 +127,7 @@ namespace Testt
                     else
                     {
                         AddPlayerToWaitingRoomTable(player.PlayerName);
-                        var founderOfGame = ReturnFounderOfGame();
+                        var founderOfGame = GetFounderOfGame();
                         return "1" + founderOfGame;
                     }
                 }
@@ -112,7 +161,7 @@ namespace Testt
                 }            
         }
 
-        private string ReturnChainOfPlayersNamesAndPlayerIdsFromWaitingRoomTable()
+        private string GetChainOfPlayersNamesAndPlayerIdsFromWaitingRoomTable()
         {           
                 using (SQLiteConnection dbConnection = new SQLiteConnection("Data Source=LangWarDataBase.sqlite;Version=3;"))
                 {
@@ -141,7 +190,7 @@ namespace Testt
                 }            
         }
 
-        private string ReturnFounderOfGame()
+        private string GetFounderOfGame()
         {            
                 using (SQLiteConnection dbConnection = new SQLiteConnection("Data Source=LangWarDataBase.sqlite;Version=3;"))
                 {
