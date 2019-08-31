@@ -13,8 +13,8 @@ using System.Data.SQLite;
 namespace Testt
 {
     public class ValuesController : ApiController
-    {         
-        //HTTP METHOD    
+    {
+        //HTTP METHOD
         public string Get()
         {
             //Returns for example: 1Bartek2Kordian //number on left side of the playerName is id related to that word in waitingRoom table
@@ -27,25 +27,13 @@ namespace Testt
             return AddPlayerToWaitingRoomTableReturnNameAndIdOfFounderIfExists(player);
         }
 
+        //HTTP METHOD
         public void Post([FromBody] BattleInfo battleInfo)
         {
             AddBattleInfoToTable(battleInfo);
         }
 
-        private void AddBattleInfoToTable(BattleInfo battleInfo)
-        {
-            using (SQLiteConnection dbConnection = new SQLiteConnection("Data Source=LangWarDataBase.sqlite;Version=3;"))
-            {
-                dbConnection.Open();
-                string battleInfoId = CreateIdForSpecyficTable(dbConnection, "battleInfo");
-
-                string sqliteQuery = "INSERT INTO battleInfo (infoId, playerId, health, firstCardId, firstCardLangVersion, secondCardId, secondCardLangVersion) values ({0},{1},{2},{3},'{4}',{5},'{6}')";
-                sqliteQuery = String.Format(sqliteQuery, battleInfoId, battleInfo.PlayerId, battleInfo.Health, battleInfo.FirstCard.CardId, battleInfo.FirstCard.LangVersion, battleInfo.SecondCard.CardId, battleInfo.SecondCard.LangVersion);
-                SQLiteCommand sqliteCommand = new SQLiteCommand(sqliteQuery, dbConnection);
-                sqliteCommand.ExecuteNonQuery();
-            }
-        }
-
+        //HTTP METHOD
         public void Delete([FromBody]DeleteInfo deleteInfo)
         {
             if(deleteInfo.TableName == "waitingRoom")
@@ -63,6 +51,19 @@ namespace Testt
         {
         }
 
+        private void AddBattleInfoToTable(BattleInfo battleInfo)
+        {
+            using (SQLiteConnection dbConnection = new SQLiteConnection("Data Source=LangWarDataBase.sqlite;Version=3;"))
+            {
+                dbConnection.Open();
+                string battleInfoId = CreateIdForSpecyficTable(dbConnection, "battleInfo");
+
+                string sqliteQuery = "INSERT INTO battleInfo (infoId, playerId, health, firstCardId, firstCardLangVersion, secondCardId, secondCardLangVersion) values ({0},{1},{2},{3},'{4}',{5},'{6}')";
+                sqliteQuery = String.Format(sqliteQuery, battleInfoId, battleInfo.PlayerId, battleInfo.Health, battleInfo.FirstCard.CardId, battleInfo.FirstCard.LangVersion, battleInfo.SecondCard.CardId, battleInfo.SecondCard.LangVersion);
+                SQLiteCommand sqliteCommand = new SQLiteCommand(sqliteQuery, dbConnection);
+                sqliteCommand.ExecuteNonQuery();
+            }
+        }
         private string AddPlayerToWaitingRoomTableReturnNameAndIdOfFounderIfExists(Player player)
         {
             if (player.JoinToExistingGame)
@@ -140,24 +141,6 @@ namespace Testt
                 }            
         }
 
-        //private void MakeCopyOfLangWarDataBaseFile()
-        //{
-        //    var currentDirectory = Directory.GetCurrentDirectory();
-        //    var pathToFile = Path.Combine(currentDirectory, "LangWarDataBase.sqlite");
-        //    var pathToCopy = Path.Combine(currentDirectory, "LangWarDataBaseCopy.sqlite");
-        //    File.Copy(pathToFile, pathToCopy,true);
-        //}
-
-        //private void RemoveCopyOfLangWarDatabase()
-        //{
-        //    var currentDirectory = Directory.GetCurrentDirectory();
-        //    var pathToCopy = Path.Combine(currentDirectory, "LangWarDataBaseCopy.sqlite");
-        //    if(File.Exists(pathToCopy))
-        //    {
-        //        File.Delete(pathToCopy);
-        //    }          
-        //}
-
         private string ReturnFounderOfGame()
         {            
                 using (SQLiteConnection dbConnection = new SQLiteConnection("Data Source=LangWarDataBase.sqlite;Version=3;"))
@@ -210,5 +193,23 @@ namespace Testt
                     return 0;
                 }
         }
+
+        //private void MakeCopyOfLangWarDataBaseFile()
+        //{
+        //    var currentDirectory = Directory.GetCurrentDirectory();
+        //    var pathToFile = Path.Combine(currentDirectory, "LangWarDataBase.sqlite");
+        //    var pathToCopy = Path.Combine(currentDirectory, "LangWarDataBaseCopy.sqlite");
+        //    File.Copy(pathToFile, pathToCopy,true);
+        //}
+
+        //private void RemoveCopyOfLangWarDatabase()
+        //{
+        //    var currentDirectory = Directory.GetCurrentDirectory();
+        //    var pathToCopy = Path.Combine(currentDirectory, "LangWarDataBaseCopy.sqlite");
+        //    if(File.Exists(pathToCopy))
+        //    {
+        //        File.Delete(pathToCopy);
+        //    }          
+        //}
     }
 }
