@@ -18,15 +18,9 @@ namespace Testt
         static void Main(string[] args)
         {
             string baseAddress = "http://localhost:12345/";
-            //CreateWaitingRoomFile();
 
             CreateLangWarDataBase();
-            CreateWaitingRoomTable();
-            CreateBattleInfoTable();
-
-            ValuesController.DeleteAllRecordsFromWaitingRoomTable();
-            ValuesController.DeleteAllRecordsFromBattleInfoTable();
-
+        
             // Start OWIN host 
             using (WebApp.Start<Startup>(url: baseAddress))
             {
@@ -60,6 +54,85 @@ namespace Testt
             if (!File.Exists(pathToFile))
             {
                 SQLiteConnection.CreateFile("LangWarDataBase.sqlite");
+            }
+
+            CreateWaitingRoomTable();
+            CreateBattleInfoTable();
+            CreateCardsTable();
+
+            PrepareTablesBeforeGame();            
+        }
+
+        private static void PrepareTablesBeforeGame()
+        {            
+            ValuesController.DeleteAllRecordsFromWaitingRoomTable();
+            ValuesController.DeleteAllRecordsFromBattleInfoTable();
+            DeleteAllRecordsFromCardsTable();
+            FillCardsTable();
+        }
+
+        private static void FillCardsTable() //Takes data from CardsCSV.csv and put into table
+        {            
+            var currentDirectory = Directory.GetCurrentDirectory();
+            var pathToFile = Path.Combine(currentDirectory, "CardsCSV.csv");
+            File.Delete(pathToFile);
+            try
+            {
+                using (var reader = new StreamReader(pathToFile))
+                {
+                    while (!reader.EndOfStream)
+                    {
+                        var line = reader.ReadLine();
+                        string[] elements = line.Split(',');
+
+                        AddRecordToCardsTable(elements[0], elements[1], elements[2], elements[3]);
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine("Brak pliku .csv zawierającego kolekcje słów. Aplikacja zakończy działanie za 4 sekundy");
+                Thread.Sleep(4000);
+                Environment.Exit(0);
+            }            
+        }
+
+        private static void AddRecordToCardsTable(string cardId, string cardLvl, string angWord, string plWord)
+        {
+            using (SQLiteConnection dbConnection = new SQLiteConnection("Data Source=LangWarDataBase.sqlite;Version=3;"))
+            {
+                dbConnection.Open();
+                string temp = "INSERT INTO cards (cardId, cardlvl, plWord, angWord) values ({0},{1},'{2}','{3}')";
+                string sqliteQuery = String.Format(temp,cardId,cardLvl,angWord,plWord);
+                SQLiteCommand sqliteCommand = new SQLiteCommand(sqliteQuery, dbConnection);
+                sqliteCommand.ExecuteNonQuery();
+            }
+        }
+
+        private static void DeleteAllRecordsFromCardsTable()
+        {
+            using (SQLiteConnection dbConnection = new SQLiteConnection("Data Source=LangWarDataBase.sqlite;Version=3;"))
+            {
+                dbConnection.Open();
+                string sqliteQuery = "DELETE FROM cards";
+                SQLiteCommand sqliteCommand = new SQLiteCommand(sqliteQuery, dbConnection);
+                sqliteCommand.ExecuteNonQuery();
+            }
+        }
+
+        private static void CreateCardsTable()
+        {
+            using (SQLiteConnection dbConnection = new SQLiteConnection("Data Source=LangWarDataBase.sqlite;Version=3;"))
+            {
+                dbConnection.Open();
+                bool cardsTableExist = CheckIfTableExists(dbConnection, "cards");
+
+                if (!cardsTableExist)
+                {
+                    string sqliteQuery = "CREATE TABLE cards (cardId INT, cardlvl INT, plWord VARCHAR(20), angWord VARCHAR(20))";
+                    SQLiteCommand sqliteCommand = new SQLiteCommand(sqliteQuery, dbConnection);
+                    sqliteCommand.ExecuteNonQuery();
+                }
             }
         }
 
